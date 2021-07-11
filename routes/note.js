@@ -33,7 +33,7 @@ router.get('/:userId',(request, response)=>{
    })
 })
 
-//update notes
+//update note by id
 router.put('/:noteId',(request, response)=>{
     const {noteId} = request.params
     const {contents} = request.body
@@ -43,10 +43,10 @@ router.put('/:noteId',(request, response)=>{
    })
 })
 
-//delete note by user id
+//delete note by note id
 router.delete('/:noteId',(request,response)=>{
     const {noteId}  = request.params
-    const statement = `delete from note where id = ${noteId}`
+    const statement = `delete from note where id = ${noteId }`
     db.query(statement, (error, result)=>{
         response.send(utils.sendResult(error, result)) 
     }) 

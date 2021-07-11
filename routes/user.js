@@ -3,7 +3,7 @@ const cryptoJs = require('crypto-js')
 const db = require('../db')
 const utils = require('../utils')
 const mailer = require('../mailer')
-
+const jwt = require('jsonwebtoken')
 
 const router = express.Router()
 
@@ -52,7 +52,10 @@ router.post('/login',(request,response)=>{
          if(users.length == 0){
             response.send({status: 'error', error:error} )
          }else{
-            response.send({status: 'success', data:users} )
+             const user = users[0]
+             const data = {id:user['id']}
+             const token = jwt.sign(data,'123456789cvbnmh')
+            response.send({status: 'success', data:token} )
          }
         }
         
@@ -67,29 +70,29 @@ router.get('/',(request,response)=>{
 })
 
 // /user/profile/<id>
-router.get('/profile/:id',(request,response)=>{
-    const {id}  = request.params
-    console.log(`id = ${id}`)
-    const statement = `select id, firstname, lastname, email, mobile from user where id = ${id}`
+router.get('/profile',(request,response)=>{
+    //const {id}  = request.params
+    const statement = `select id, firstname, lastname, email, mobile from user where id = ${request.userId}`
     db.query(statement, (error, users)=>{
         if(users.length>0){
             const user = users[0]
             response.send(utils.sendResult(error, user)) 
         }else{
+            
             response.send(utils.sendError('there is no user with that id')) 
         }
     }) 
 })
 
-router.put('/profile/:id',(request,response)=>{
-    const {id}  = request.params
+router.put('/profile',(request,response)=>{
+    //const {id}  = request.params
     const {firstname,lastname,email,mobile} = request.body
     const statement = `update user set 
     firstname='${firstname}',
     lastname = '${lastname}',
     email = '${email}',
     mobile = '${mobile}'
-    where id = ${id}`
+    where id = ${request.userId}`
     
     db.query(statement, (error, result)=>{
         response.send(utils.sendResult(error, result)) 
@@ -97,10 +100,10 @@ router.put('/profile/:id',(request,response)=>{
     }) 
 })
 
-router.delete('/profile/:id',(request,response)=>{
-    const {id}  = request.params
-    console.log(`id = ${id}`)
-    const statement = `delete from user where id = ${id}`
+router.delete('/profile',(request,response)=>{
+    //const {id}  = request.params
+    //console.log(`id = ${id}`)
+    const statement = `delete from user where id = ${request.userId}`
     db.query(statement, (error, result)=>{
         response.send(utils.sendResult(error, result)) 
     }) 
